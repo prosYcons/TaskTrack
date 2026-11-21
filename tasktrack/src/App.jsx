@@ -1,122 +1,167 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+
+import { useEffect, useState } from "react";
+import AssignmentForm from "./components/AssignmentForm";
+import AssignmentList from "./components/AssignmentList";
+import { getAssignments, saveAssignments } from "./modules/storage";
+import "./styles/global.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [assignments, setAssignments] = useState(getAssignments);
+  const [filter, setFilter] = useState("All");
+
+  useEffect(() => {
+    saveAssignments(assignments);
+  }, [assignments]);
+
+  function addAssignment(newAssignment) {
+    setAssignments((current) => [...current, newAssignment]);
+  }
+
+  function toggleAssignment(id) {
+    setAssignments((current) =>
+      current.map((assignment) =>
+        assignment.id === id
+          ? { ...assignment, completed: !assignment.completed }
+          : assignment
+      )
+    );
+  }
+
+  function deleteAssignment(id) {
+    setAssignments((current) =>
+      current.filter((assignment) => assignment.id !== id)
+    );
+  }
+
+  const today = new Date().toLocaleDateString("en-CA");
+
+  const pending = assignments.filter((item) => !item.completed);
+  const completed = assignments.filter((item) => item.completed);
+  const overdue = pending.filter((item) => item.dueDate < today);
+
+  const filteredAssignments = assignments
+    .filter((item) => {
+      if (filter === "Pending") return !item.completed;
+      if (filter === "Completed") return item.completed;
+      if (filter === "Overdue") return !item.completed && item.dueDate < today;
+      return true;
+    })
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app-container">
+      <aside className="sidebar">
+        <div className="brand">
+          <span className="brand-icon">✓</span>
+          <span>TaskTrack</span>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+        <p className="sidebar-label">WORKSPACE</p>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <nav className="sidebar-nav">
+          <a href="#dashboard" className="nav-link active">
+            <span>▦</span> Dashboard
+          </a>
+          <a href="#assignments" className="nav-link">
+            <span>☷</span> Assignments
+          </a>
+        </nav>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <div className="sidebar-bottom">
+          <p>Stay organized.</p>
+          <span>One task at a time.</span>
+        </div>
+      </aside>
+
+      <main className="main-content" id="dashboard">
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">YOUR ACADEMIC WORKSPACE</p>
+            <h1>My Dashboard</h1>
+          </div>
+          <div className="today-label">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "short",
+              day: "numeric",
+            })}
+          </div>
+        </header>
+
+        <section className="welcome-section">
+          <div>
+            <p className="eyebrow">WELCOME TO TASKTRACK</p>
+            <h2>Make time for what matters.</h2>
+            <p>Organize your assignments and stay on top of your coursework.</p>
+          </div>
+          <span className="welcome-decoration">✦</span>
+        </section>
+
+        <section className="stats-grid">
+          <div className="stat-card">
+            <span className="stat-label">Total assignments</span>
+            <strong>{assignments.length}</strong>
+            <span className="stat-note">All your coursework</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-label">Pending</span>
+            <strong>{pending.length}</strong>
+            <span className="stat-note">Still to complete</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-label">Completed</span>
+            <strong>{completed.length}</strong>
+            <span className="stat-note">Tasks finished</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-label">Overdue</span>
+            <strong>{overdue.length}</strong>
+            <span className="stat-note">Past their due date</span>
+          </div>
+        </section>
+
+        <div className="content-grid">
+          <section className="assignments-section" id="assignments">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">STAY ON TRACK</p>
+                <h2>Your assignments</h2>
+              </div>
+
+              <select
+                className="filter-select"
+                value={filter}
+                onChange={(event) => setFilter(event.target.value)}
+                aria-label="Filter assignments"
+              >
+                <option>All</option>
+                <option>Pending</option>
+                <option>Completed</option>
+                <option>Overdue</option>
+              </select>
+            </div>
+
+            <AssignmentList
+              assignments={filteredAssignments}
+              onToggle={toggleAssignment}
+              onDelete={deleteAssignment}
+            />
+          </section>
+
+          <aside className="form-section">
+            <AssignmentForm onAddAssignment={addAssignment} />
+          </aside>
+        </div>
+
+        <footer className="footer">
+          TaskTrack · A simpler way to manage your academic workload.
+        </footer>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
