@@ -33,6 +33,16 @@ function App() {
     );
   }
 
+  function updateAssignment(updatedAssignment) {
+    setAssignments((current) =>
+      current.map((assignment) =>
+        assignment.id === updatedAssignment.id
+          ? updatedAssignment
+          : assignment
+      )
+    );
+  }
+
   const today = new Date().toLocaleDateString("en-CA");
 
   const pending = assignments.filter((item) => !item.completed);
@@ -148,6 +158,7 @@ function App() {
               assignments={filteredAssignments}
               onToggle={toggleAssignment}
               onDelete={deleteAssignment}
+              onUpdate={updateAssignment}
             />
           </section>
 

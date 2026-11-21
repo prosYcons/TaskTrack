@@ -2,7 +2,7 @@
 
 import AssignmentCard from "./AssignmentCard";
 
-function AssignmentList({ assignments, onToggle, onDelete }) {
+function AssignmentList({ assignments, onToggle, onDelete, onUpdate }) {
   if (assignments.length === 0) {
     return (
       <div className="empty-state">
@@ -21,6 +21,7 @@ function AssignmentList({ assignments, onToggle, onDelete }) {
           assignment={assignment}
           onToggle={onToggle}
           onDelete={onDelete}
+          onUpdate={onUpdate}
         />
       ))}
     </div>
